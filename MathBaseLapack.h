@@ -31,8 +31,13 @@
 // /nodefaultlib:vcomp
 
 #undef small // conflict with "rpcndr.h" used in MFC
-#include <mkl_lapack.h>
-#include <mkl_blas.h>
+
+//12/11/13 ‚¨‹à‚ª‚È‚¢‚Åmkl‚Íg‚¢‚Ü‚¹‚Ê
+//#include <mkl_lapack.h>
+//#include <mkl_blas.h>
+
+//12/11/13@‚©‚í‚è‚Émac‚ÌAccelerate‚ğg‚¢‚Ü‚·‚é
+#include <Accelerate/Accelerate.h>
 
 #include "MathBaseUtil.h"
 #include "MiscUtil.h"

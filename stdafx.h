@@ -4,7 +4,7 @@
 #include <direct.h>
 
 #include <string>
-#include <vector>
+
 
 #include "MathBaseLapack.h"
 #include "MiscUtil.h"

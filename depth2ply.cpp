@@ -7,7 +7,7 @@
 
 using namespace slib;
 
-
+//オプション構造体
 struct
 {
 	std::string filename;
@@ -34,7 +34,7 @@ m_option =
 	50,
 	0,
 };
-
+//使い方描画関数
 void print_usage(char *argv1)
 {
 	printf("Usage: %s [-b [depth_ratio window]] [-d] [-f frames] [-i index] [-l [depth_ratio window]] [-m] [-p [threshold]] [-r] [-t] <depth>\n", argv1);
@@ -155,15 +155,20 @@ void parse_option(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+	//例外処理を読み込み
 	try
 	{
+		//オプションの読み込み
 		parse_option(argc, argv);
 
+		//オプションからファイルを開く
 		FILE *fr = fopen(m_option.filename.c_str(), "rb");
 		if (!fr)
 		{
 			print_usage(argv[1]);
 		}
+
+		//フレームを読み込み
 		int nframes, d;
 		fread(&nframes, sizeof(int), 1, fr);
 		printf("#frames = %d\n", nframes);
