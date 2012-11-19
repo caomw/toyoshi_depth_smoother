@@ -825,7 +825,7 @@ public:
 		if (!(IsInside(x, y) && ch >= 0 && ch < m_num_channels))
 		{
 //			printf("%d, %d\n", x, y);
-			throw std::runtime_error("out of range in " __FUNCTION__);
+			throw std::runtime_error("out of range in " );
 		}
 
 		int nPad = (4 - ((m_width * m_num_channels) % 4)) % 4;

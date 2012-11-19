@@ -8,6 +8,7 @@
 #pragma once
 
 // http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor/
+/*
 #ifdef _DLL // /MD
 #if defined(_M_IX86)
 #pragma comment(lib, "mkl_intel_c_dll.lib")
@@ -27,6 +28,8 @@
 #pragma comment(lib, "mkl_core.lib")
 #pragma comment(lib, "libiomp5mt.lib")
 #endif
+*/
+//12/11/16 Masahiko MKLを使わないのでコメントアウト
 // http://software.intel.com/sites/products/documentation/hpc/composerxe/en-us/cpp/mac/optaps/common/optaps_par_compat_libs_using.htm
 // /nodefaultlib:vcomp
 
@@ -36,11 +39,10 @@
 //#include <mkl_lapack.h>
 //#include <mkl_blas.h>
 
-//12/11/13　かわりにmacのAccelerateを使いまする
-#include <Accelerate/Accelerate.h>
-
 #include "MathBaseUtil.h"
 #include "MiscUtil.h"
+
+
 
 #undef min
 #undef max
@@ -49,6 +51,8 @@ namespace slib
 {
 namespace
 {
+
+const MKL_INT minmn = 3;
 
 //------------------------------------------------------------
 // lower, non-transposed matrix in Rectangular Full Packed format
@@ -60,7 +64,7 @@ void ConvertToRFP(const CMatrixType& lower, CDynamicMatrix<double>& rfp)
 	int dim = lower.GetNumRows();
 	if (dim != lower.GetNumCols())
 	{
-		throw std::logic_error("invalid matrix size in "  __FUNCTION__);
+		throw std::logic_error("invalid matrix size in ");
 	}
 	if (dim % 2)
 	{
@@ -115,7 +119,7 @@ void ConvertFromRFP(const CDynamicMatrix<double>& rfp, CMatrixType& lower)
 		int dim = rfp.GetNumRows() - 1;
 		if (dim != lower.GetNumRows() || col != lower.GetNumCols() / 2)
 		{
-			throw std::logic_error("invalid matrix size in " __FUNCTION__);
+			throw std::logic_error("invalid matrix size in ");
 		}
 		lower.Fill(0);
 
@@ -141,7 +145,7 @@ void ConvertFromRFP(const CDynamicMatrix<double>& rfp, CMatrixType& lower)
 		int dim = rfp.GetNumRows();
 		if (dim != lower.GetNumRows() || 2 * col - 1 != lower.GetNumCols())
 		{
-			throw std::logic_error("invalid matrix size in" __FUNCTION__);
+			throw std::logic_error("invalid matrix size in");
 		}
 		for (int c = 0; c < dim; c++)
 		{
@@ -177,7 +181,7 @@ void DPOTRF_driver(
 	const MKL_INT n = mat.GetNumRows();
 	if (mat.GetNumCols() != n || lower.GetNumRows() != n || lower.GetNumCols() != n)
 	{
-		throw std::logic_error("invalid matrix size in " __FUNCTION__);
+		throw std::logic_error("invalid matrix size in ");
 	}
 
 	CDynamicMatrix<double> a(n, n, mat.ptr());
@@ -186,11 +190,11 @@ void DPOTRF_driver(
 	DPOTRF(&uplo, &n, a.ptr(), &lda, &info);
 	if (info < 0)
 	{
-		throw std::runtime_error(string_format("%d-th parameter of DPFTRF had an illegal value in " __FUNCTION__, -info));
+		throw std::runtime_error(string_format("%d-th parameter of DPFTRF had an illegal value in ", -info));
 	}
 	else if (info > 0)
 	{
-		throw std::runtime_error(string_format("the leading minor of order %d is not positive-definite in " __FUNCTION__, info));
+		throw std::runtime_error(string_format("the leading minor of order %d is not positive-definite in ", info));
 	}
 	for (int c = 0; c < n; c++)
 	{
@@ -226,7 +230,7 @@ void DGELS_driver(
 	const MKL_INT nrhs = vec.GetNumCols();
 	if (vec.GetNumRows() != m || sol.GetNumRows() != n || sol.GetNumCols() != nrhs)
 	{
-		throw std::logic_error("invalid matrix size in " __FUNCTION__);
+		throw std::logic_error("invalid matrix size in ");
 	}
 
 	CDynamicMatrix<double> a(m, n, mat.ptr());
@@ -242,11 +246,11 @@ void DGELS_driver(
 	DGELS(&trans, &m, &n, &nrhs, a.ptr(), &lda, b.ptr(), &ldb, work.ptr(), &lwork, &info);
 	if (info < 0)
 	{
-		throw std::runtime_error(string_format("%d-th parameter of DGELS had an illegal value in " __FUNCTION__, -info));
+		throw std::runtime_error(string_format("%d-th parameter of DGELS had an illegal value in " , -info));
 	}
 	else if (info > 0)
 	{
-		throw std::runtime_error(string_format("%d-th diagonal element of the triangular factor is zero in " __FUNCTION__, info));
+		throw std::runtime_error(string_format("%d-th diagonal element of the triangular factor is zero in ", info));
 	}
 	sol.Initialize(b.ptr());
 }
@@ -271,7 +275,7 @@ void DGESVD_driver(
 	const MKL_INT minmn = std::min(m, n);
 	if (matU.GetNumRows() != m || matU.GetNumCols() != m || vecW.GetNumRows() != minmn || matVt.GetNumRows() != n || matVt.GetNumCols() != n)
 	{
-		throw std::logic_error("invalid matrix size in " __FUNCTION__);
+		throw std::logic_error("invalid matrix size in ");
 	}
 	CDynamicMatrix<double> a(m, n, mat.ptr());
 	const MKL_INT lda = m;
@@ -289,11 +293,11 @@ void DGESVD_driver(
 	DGESVD(&jobu, &jobvt, &m, &n, a.ptr(), &lda, s.ptr(), u.ptr(), &ldu, vt.ptr(), &ldvt, work.ptr(), &lwork, &info);
 	if (info < 0)
 	{
-		throw std::runtime_error(string_format("%d-th parameter of DGESVD had an illegal value in " __FUNCTION__, -info));
+		throw std::runtime_error(string_format("%d-th parameter of DGESVD had an illegal value in " , -info));
 	}
 	else if (info > 0)
 	{
-		throw std::runtime_error(string_format("%d superdiagonals of the intermediate bidiagonal form did not converge to zero in " __FUNCTION__, info));
+		throw std::runtime_error(string_format("%d superdiagonals of the intermediate bidiagonal form did not converge to zero in " , info));
 	}
 	vecW.Initialize(s.ptr());
 	matU.Initialize(u.ptr());
@@ -309,7 +313,7 @@ void DSYEV_driver(const CMatrixType& mat, CMatrixType& vec, CVectorType& value)
 	MKL_INT n = mat.GetNumRows();
 	if (mat.GetNumCols() != n || vec.GetNumRows() != n || vec.GetNumCols() != n || value.GetNumRows() != n)
 	{
-		throw std::logic_error("invalid matrix size in " __FUNCTION__);
+		throw std::logic_error("invalid matrix size in ");
 	}
 	CDynamicMatrix<double> a(n, n, mat.ptr());
 	const MKL_INT lda = n;
@@ -323,11 +327,11 @@ void DSYEV_driver(const CMatrixType& mat, CMatrixType& vec, CVectorType& value)
 	DSYEV(&jobz, &uplo, &n, a.ptr(), &lda, w.ptr(), work.ptr(), &lwork, &info);
 	if (info < 0)
 	{
-		throw std::runtime_error(string_format("%d-th parameter of DSYEV had an illegal value in " __FUNCTION__, -info));
+		throw std::runtime_error(string_format("%d-th parameter of DSYEV had an illegal value in ", -info));
 	}
 	else if (info > 0)
 	{
-		throw std::runtime_error(string_format("DSYEV failed to converge in " __FUNCTION__, info));
+		throw std::runtime_error(string_format("DSYEV failed to converge in " , info));
 	}
 
 	vec.Initialize(a.ptr());
@@ -345,7 +349,7 @@ void get_inverse(const CMatrixType& mat, CMatrixType& ret)
 	const MKL_INT m = mat.GetNumRows();
 	if (mat.GetNumCols() != m || ret.GetNumRows() != m || ret.GetNumCols() != m)
 	{
-		throw std::logic_error("invalid matrix size in " __FUNCTION__);
+		throw std::logic_error("invalid matrix size in ");
 	}
 
 	const MKL_INT n = m;
@@ -357,11 +361,11 @@ void get_inverse(const CMatrixType& mat, CMatrixType& ret)
 	DGETRF(&m, &n, a.ptr(), &lda, ipiv.ptr(), &info);
 	if (info < 0)
 	{
-		throw std::runtime_error(string_format("%d-th parameter of DGETRF had an illegal value in " __FUNCTION__, -info));
+		throw std::runtime_error(string_format("%d-th parameter of DGETRF had an illegal value in " , -info));
 	}
 	else if (info > 0)
 	{
-		throw std::runtime_error(string_format("%d-th diagonal element of the factor U is zero in " __FUNCTION__, info));
+		throw std::runtime_error(string_format("%d-th diagonal element of the factor U is zero in " , info));
 	}
 
 	double chkwork;
@@ -372,11 +376,11 @@ void get_inverse(const CMatrixType& mat, CMatrixType& ret)
 	DGETRI(&n, a.ptr(), &lda, ipiv.ptr(), work.ptr(), &lwork, &info);
 	if (info < 0)
 	{
-		throw std::runtime_error(string_format("%d-th parameter of DGETRI had an illegal value in " __FUNCTION__, -info));
+		throw std::runtime_error(string_format("%d-th parameter of DGETRI had an illegal value in " , -info));
 	}
 	else if (info > 0)
 	{
-		throw std::runtime_error(string_format("%d-th diagonal element of the factor U is zero in " __FUNCTION__, info));
+		throw std::runtime_error(string_format("%d-th diagonal element of the factor U is zero in " , info));
 	}
 
 	ret.Initialize(a.ptr());
@@ -396,46 +400,6 @@ const CMatrixType inverse_of(const CMatrixType& mat)
 	return ret;
 }
 
-template <typename T>
-inline
-T determinant_of(const CDynamicMatrix<T>& mat)
-{
-	const MKL_INT m = mat.GetNumRows();
-	if (m != mat.GetNumCols())
-	{
-		throw std::logic_error("invalid matrix size in " __FUNCTION__);
-	}
-
-	const MKL_INT n = m;
-	CDynamicMatrix<double> a(m, n, mat.ptr());
-	const MKL_INT lda = m;
-	CDynamicVector<MKL_INT> ipiv(std::min(m, n));
-	const MKL_INT info;
-	DGETRF(&m, &n, a.ptr(), &lda, ipiv.ptr(), &info);
-	if (info < 0)
-	{
-		throw std::runtime_error(string_format("%d-th parameter of DGETRF had an illegal value in " __FUNCTION__, -info));
-	}
-	else if (info > 0)
-	{
-		return 0;
-	}
-
-	T det = 1;
-	for (int i = 0; i < minmn; i++)
-	{
-		if (ipiv[i] != i + 1)
-		{
-			det *= -a(i, i);
-		}
-		else
-		{
-			det *= a(i, i);
-		}
-	}
-	return det;
-}
-
 template <int nDimension, typename T>
 inline
 void normalize_rotation(CMatrix<nDimension, nDimension, T>& mat)
@@ -446,7 +410,8 @@ void normalize_rotation(CMatrix<nDimension, nDimension, T>& mat)
 	const char jobvt = 'A';
 	const MKL_INT m = 3;
 	const MKL_INT n = 3;
-	const MKL_INT minmn = 3;
+	//12/11/16 Masahiko なぜか認識しないのでグローバルにしてみる。
+	//const MKL_INT minmn = 3;
 	float a[3 * 3];
 	for (int c = 0; c < 3; c++)
 	{
@@ -478,5 +443,48 @@ void normalize_rotation(CMatrix<nDimension, nDimension, T>& mat)
 		}
 	}
 }
+
+template <typename T>
+inline
+T determinant_of(const CDynamicMatrix<T>& mat)
+{
+	const MKL_INT m = mat.GetNumRows();
+	if (m != mat.GetNumCols())
+	{
+		throw std::logic_error("invalid matrix size in " );
+	}
+
+	const MKL_INT n = m;
+	CDynamicMatrix<double> a(m, n, mat.ptr());
+	const MKL_INT lda = m;
+	CDynamicVector<MKL_INT> ipiv(std::min(m, n));
+	const MKL_INT info;
+	DGETRF(&m, &n, a.ptr(), &lda, ipiv.ptr(), &info);
+	if (info < 0)
+	{
+		throw std::runtime_error(string_format("%d-th parameter of DGETRF had an illegal value in ", -info));
+	}
+	else if (info > 0)
+	{
+		return 0;
+	}
+
+	T det = 1;
+	for (int i = 0; i < minmn; i++)
+	{
+		//12/11/16 Masahiko オペレータ[]が使えないとのこと
+		if (ipiv[i] != i + 1)
+		{
+			det *= -a(i, i);
+		}
+		else
+		{
+			det *= a(i, i);
+		}
+	}
+	return det;
+}
+
+
 
 }

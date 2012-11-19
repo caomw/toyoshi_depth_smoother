@@ -18,6 +18,13 @@
 #undef min
 #undef max
 
+//12/11/13Masahiko std::runtimeをUnixで使うには<stdexept>のインクルードが必要
+#include <stdexcept>
+
+#include <cmath>
+
+#include "stdafx.h"
+
 namespace slib
 {
 #define STATIC_ASSERT(x) static_assert(x, "static_assert() failed")
@@ -370,14 +377,14 @@ public:
 		FILE *fr = fopen(filename.c_str(), "rb");
 		if (!fr)
 		{
-			throw std::runtime_error("failed to open file in " __FUNCTION__);
+			throw std::runtime_error("failed to open file in ");
 		}
 
 		int nrows, ncols;
 		fscanf(fr, "%d%d", &nrows, &ncols);
 		if (nrows != nNumRows || ncols != nNumCols)
 		{
-			throw std::runtime_error("invalid matrix size in " __FUNCTION__);
+			throw std::runtime_error("invalid matrix size in ");
 		}
 
 		for (int r = 0; r < nNumRows; r++)
@@ -388,7 +395,7 @@ public:
 				if (fscanf(fr, "%lf", &el) != 1)
 				{
 					fclose(fr);
-					throw std::runtime_error("failed to parse file in " __FUNCTION__);
+					throw std::runtime_error("failed to parse file in ");
 				}
 				(*this)(r, c) = el;
 			}
@@ -403,7 +410,7 @@ public:
 		FILE *fw = fopen(filename.c_str(), "wb");
 		if (!fw)
 		{
-			throw std::runtime_error("failed to open file in " __FUNCTION__);
+			throw std::runtime_error("failed to open file in ");
 		}
 
 		fprintf(fw, "%d %d\n", nNumRows, nNumCols);
@@ -628,15 +635,18 @@ class CVector : public CMatrix<nDimension, 1, T>
 {
 public:
 	// initializers
-	CVector(void) : CMatrix()
+	/*CVector(void) : CMatrix()
 	{
 	}
+	*/
+
 
 	explicit CVector(T const *const element)
-		: CMatrix(element)
 	{
+		Initialize(element);
 	}
 
+	/*
 	// copy
 	CVector(const CVector& vec)
 		: CMatrix(vec)
@@ -675,6 +685,7 @@ public:
 		_ASSERTE(n < nDimension);
 		return m[n];
 	}
+	*/
 };
 
 // construction
@@ -920,7 +931,7 @@ void GetRollPitchYawAngles(const CMatrix<nDimension, nDimension, T>& mat, T& rol
 	else
 	{
 		rollRadian = -atan2(mat(0, 1), mat(1, 1));
-		pitchRadian = -mat(2, 0) * M_PI / 2;
+		pitchRadian = -mat(2, 0) * 	M_PI / 2;
 		yawRadian = 0;
 	}
 }
@@ -1550,7 +1561,7 @@ public:
 		FILE *fr = fopen(filename.c_str(), "rb");
 		if (!fr)
 		{
-			throw std::runtime_error("failed to open file in " __FUNCTION__);
+			throw std::runtime_error("failed to open file in ");
 		}
 		int nrows, ncols;
 		fscanf(fr, "%d%d", &nrows, &ncols);
@@ -1563,7 +1574,7 @@ public:
 				if (fscanf(fr, "%lf", &el) != 1)
 				{
 					fclose(fr);
-					throw std::runtime_error("failed to parse file in " __FUNCTION__);
+					throw std::runtime_error("failed to parse file in ");
 				}
 				(*this)(r, c) = el;
 			}
@@ -1578,7 +1589,7 @@ public:
 		FILE *fw = fopen(filename.c_str(), "wb");
 		if (!fw)
 		{
-			throw std::runtime_error("failed to open file in " __FUNCTION__);
+			throw std::runtime_error("failed to open file in ");
 		}
 		fprintf(fw, "%d %d\n", m_nNumRows, m_nNumCols);
 		for (int r = 0; r < m_nNumRows; r++)
@@ -1621,7 +1632,7 @@ public:
 		: CDynamicMatrix<T>(nDim, 1, element)
 	{
 	}
-
+	/*
 	// copy
 	CDynamicVector(const CDynamicVector& vec)
 		: CDynamicMatrix(vec)
@@ -1664,7 +1675,7 @@ public:
 	{
 		CDynamicMatrix::Resize(nRows, 1);
 	}
-
+	*/
 	// operators
 	T& operator [](const int n)
 	{
@@ -1677,6 +1688,11 @@ public:
 		_ASSERTE(0 <= n && n < m_nNumRows);
 		return m[n];
 	}
+
+protected:
+	int m_nNumRows;
+	int m_nNumCols;
+	T *m; // row major order
 };
 
 // helpers
@@ -1748,7 +1764,7 @@ CDynamicMatrix<T> skew_symmetric_of(CDynamicMatrix<T>& vec)
 {
 	if (vec.GetNumRows() != 3)
 	{
-		throw std::runtime_error("not a 3-vector in " __FUNCTION__);
+		throw std::runtime_error("not a 3-vector in ");
 	}
 
 	CDynamicMatrix<T> iret(3, 3);

@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "depth2ply.h"
 
+//12/11/13@‚©‚í‚è‚Émac‚ÌAccelerate‚ğg‚¢‚Ü‚·‚é
+#include <Accelerate/Accelerate.h>
+
 using namespace slib;
 
 void bilateral_filter(unsigned short *depth, int window, float depth_ratio)
@@ -11,7 +14,7 @@ void bilateral_filter(unsigned short *depth, int window, float depth_ratio)
 	for (int y = 0; y < 480; y++)
 	{
 		printf("\rbilateral filtering %d%%", 100 * y / 479);
-		#pragma omp parallel for
+		//#pragma omp parallel for
 		for (int x = 0; x < 640; x++)
 		{
 			int index = (work[x + 640 * y] & 7);
@@ -47,7 +50,7 @@ void bilateral_filter(unsigned short *depth, int window, float depth_ratio)
 			{
 				sum /= weight;
 			}
-			depth[x + 640 * y] = ((unsigned short(sum) << 3) | index);
+			depth[x+640*y]=((short)sum << 3 | index);
 		}
 	}
 	printf("\n");
@@ -68,7 +71,8 @@ void fast_least_squares(float *a, int ndata)
 	float work[1024];
 	MKL_INT lwork = 1024;
 	MKL_INT info;
-	SGESVD(&jobu, &jobvt, &m, &n, a, &lda, s, u, &ldu, 0, &ldvt, work, &lwork, &info);
+	sgesvd_(&jobu, &jobvt, &m, &n, a, &lda, s, u, &ldu, 0, &ldvt, work, &lwork, &info);
+	//dgesv_(&m, &n, (double)a, &lda, s, u, &ldu, 0, &ldvt, work, &lwork, &info);
 	for (int i = 0; i < 4; i++)
 	{
 		a[i] = u[12 + i];
@@ -140,7 +144,7 @@ void least_squares_fitting(unsigned short *depth, int window, float depth_ratio)
 				float t = -mat[3] / dot(make_vector(v.x, v.y, v.z), make_vector(mat[0], mat[1], mat[2]));
 				ref *= t;
 			}
-			depth[x + 640 * y] = ((unsigned short(ref) << 3) | index);
+			depth[x + 640 * y] = ((ref << 3) | index);
 		}
 	}
 	printf("\n");

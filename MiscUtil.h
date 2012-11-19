@@ -20,6 +20,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+//12/11/15 Masahiko VCŠg’£‚ğˆê”Ê‰»
+//#define _vscprintf(f,a) vsprintf(NULL,f,a)
+
+//12/11/13 Masahiko assert‚ª’è‹`‚³‚ê‚Ä‚¢‚È‚¢–â‘è‚É‚Â‚¢‚Ä
+#include <assert.h>
+
 #undef min
 #undef max
 
@@ -32,7 +38,7 @@ void ThrowRuntimeError(const char *fmt, ...)
 	va_list param;
 	va_start(param, fmt);
 	char message[1024];
-	_vsnprintf(message, 1023, fmt, param);
+	vsnprintf(message, 1023, fmt, param);
 	message[1023] = 0;
 	TRACE(message);
 	TRACE("\n");
@@ -45,7 +51,7 @@ void ThrowLogicError(const char *fmt, ...)
 	va_list param;
 	va_start(param, fmt);
 	char message[1024];
-	_vsnprintf(message, 1023, fmt, param);
+	vsnprintf(message, 1023, fmt, param);
 	message[1023] = 0;
 	TRACE(message);
 	throw std::logic_error(message);
@@ -61,7 +67,9 @@ std::string string_format(const char *fmt, ...)
 	va_start(arguments, fmt);
 	try
 	{
-		int length = _vscprintf(fmt, arguments);
+		//12/11/16 Masahiko VCŠg’£‚ğˆê”Ê‰»‚·‚é‚½‚ß‚É•ÏX
+		int length = vsprintf(NULL,fmt,arguments );
+				//vsnprintf(fmt, arguments);
 		if (length < 0)
 		{
 			throw std::runtime_error("_vscprintf() failed.");
@@ -146,8 +154,8 @@ int GetLeastPowerOfTwo(const int n)
 inline
 bool file_exists(const std::string& filename)
 {
-	struct _stat	 buf;
-	return !_stat(filename.c_str(), &buf);
+	struct stat	 buf;
+	return !stat(filename.c_str(), &buf);
 }
 
 } // slib
