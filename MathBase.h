@@ -1621,16 +1621,22 @@ public:
 	// constructors
 	CDynamicVector(void)
 	{
+		m_nNumCols = 0;
+		m_nNumRows = 0;
 	}
 
 	explicit CDynamicVector(int nDim)
 		: CDynamicMatrix<T>(nDim, 1)
 	{
+		m_nNumCols = 0;
+		m_nNumRows = 0;
 	}
 
 	CDynamicVector(int nDim, T const *const element)
 		: CDynamicMatrix<T>(nDim, 1, element)
 	{
+		m_nNumCols = 0;
+		m_nNumRows = 0;
 	}
 	/*
 	// copy

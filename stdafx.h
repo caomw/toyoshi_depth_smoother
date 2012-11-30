@@ -21,3 +21,7 @@
 #include <Accelerate/Accelerate.h>
 #include <vecLib/vecLib.h>
 #include <assert.h>
+
+//12/11/19 mac‚ÅGL‚ðŽg‚¤
+#include <OpenGL/gl.h>
+#include <GLUT/glut.h>
